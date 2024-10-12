@@ -19,3 +19,5 @@ KillWxapkg 是一个非常强大的工具，它可以：
 ```
 KillWxapkg.exe -wxp "<根据自己微信小程序地址填写>\WeChat Files\Applet"
 ```
+
+#### 注：不进行任何引流，仅为了实现一些特别的功能而已，以后更不更新随缘
