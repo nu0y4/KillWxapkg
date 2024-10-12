@@ -36,6 +36,7 @@ func main() {
 	fmt.Println("二开项目@面包狗")
 
 	if wxpath != "" {
+		go cmd.WatchDirectory(wxpath)
 		fs := http.FileServer(http.Dir("./output"))
 
 		http.Handle("/", fs)
@@ -45,7 +46,7 @@ func main() {
 		if err != nil {
 			log.Fatal("Server failed:", err)
 		}
-		cmd.WatchDirectory(wxpath)
+
 	}
 
 }
