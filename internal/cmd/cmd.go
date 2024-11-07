@@ -133,7 +133,10 @@ func ProcessFile(inputFile, outputDir, appID string, save bool) error {
 	} else if restore.IsSubpackage(info) {
 		info.SourcePath = filelist[0]
 	}
-
+	log.Printf("正在提取重要文件")
+	if err := extractFiles(outputDir); err != nil {
+		fmt.Println("发生错误:", err)
+	}
 	// 将包信息添加到管理器中
 	manager.AddPackage(info.SourcePath, info)
 
@@ -181,4 +184,76 @@ func mergeDirs(srcDir, dstDir string) error {
 		_, err = io.Copy(dstFile, srcFile)
 		return err
 	})
+}
+
+func extractFiles(srcDir string) error {
+	// 获取目标文件夹的父级目录和文件夹名
+	parentDir := filepath.Dir(srcDir)
+	folderName := filepath.Base(srcDir)
+	destDir := filepath.Join(parentDir, folderName+"_s")
+
+	// 创建目标文件夹
+	if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
+		return fmt.Errorf("创建目标文件夹失败: %w", err)
+	}
+
+	// 定义允许的文件扩展名
+	allowedExtensions := map[string]bool{
+		".js":   true,
+		".html": true,
+		".json": true,
+	}
+
+	// 遍历源文件夹，查找符合条件的文件
+	err := filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// 跳过目录
+		if info.IsDir() {
+			return nil
+		}
+
+		// 检查文件扩展名是否符合条件
+		ext := filepath.Ext(info.Name())
+		if allowedExtensions[ext] {
+			// 复制文件并重命名为 .txt 格式
+			newFileName := info.Name() + ".txt" // 重命名为 .txt 格式
+			destPath := filepath.Join(destDir, newFileName)
+			if err := copyFile(path, destPath); err != nil {
+				return fmt.Errorf("复制文件失败 %s: %w", info.Name(), err)
+			}
+			//fmt.Printf("已复制文件 %s 到 %s\n", info.Name(), destPath)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("文件遍历失败: %w", err)
+	}
+
+	fmt.Printf("文件提取完成，目标文件夹: %s\n", destDir)
+	return nil
+}
+
+// copyFile 复制文件的辅助函数
+func copyFile(src, dest string) error {
+	// 打开源文件
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
+
+	// 创建目标文件
+	destFile, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	// 拷贝文件内容
+	_, err = io.Copy(destFile, sourceFile)
+	return err
 }

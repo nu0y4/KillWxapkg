@@ -51,6 +51,7 @@ func Execute(appID, input, outputDir, fileExt string, restoreDir bool, pretty bo
 			} else {
 				log.Printf("成功处理文件: %s\n", file)
 			}
+
 		}(inputFile)
 	}
 	wg.Wait()
@@ -138,10 +139,12 @@ func WatchDirectory(dirToWatch string) {
 					fmt.Println("检测到ID：:", appID)
 					fmt.Println("========================开始解包文件========================")
 					pathName, err := createFolderWithTimestamp(appID)
+					fmt.Println(pathName)
 					if err != nil {
 						return
 					}
 					Execute(appID, path, pathName, "", false, true, false, false, false)
+
 				}
 			}
 		}
